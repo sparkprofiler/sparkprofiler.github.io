@@ -129,9 +129,10 @@ function renderStackToHtml(root, totalTime, renderingFunction) {
             }
 
             // print start
-            const timePercent = ((node["time"] / totalTime) * 100).toFixed(2) + "%";
+            const time = node["time"];
+            const timePercent = ((time / totalTime) * 100).toFixed(2) + "%";
             html += '<li>';
-            html += '<div class="node collapsed" data-name="' + nodeAsString(node) + '">';
+            html += '<div class="node collapsed" data-name="' + nodeAsString(node) + '" data-time="' + time + '">';
             html += '<div class="name">';
             html += renderingFunction(node, parentNode);
             const parentLineNumber = node["parentLineNumber"];
@@ -139,7 +140,7 @@ function renderStackToHtml(root, totalTime, renderingFunction) {
                 html += '<span class="lineNumber" title="Invoked on line ' + parentLineNumber + ' of ' + parentNode["methodName"] + '()">:' + parentLineNumber + '</span>';
             }
             html += '<span class="percent">' + timePercent + '</span>';
-            html += '<span class="time">' + node["time"] + 'ms</span>';
+            html += '<span class="time">' + time + 'ms</span>';
             html += '<span class="bar"><span class="bar-inner" style="width: ' + timePercent + '"></span></span>';
             html += '</div>';
             html += '<ul class="children">';
@@ -545,6 +546,15 @@ function collapseAll() {
     collapseEntireTree($stack);
 }
 
+function toggleBookmark(node) {
+    const child = node.children(".name");
+    if (child.hasClass("bookmarked")) {
+        child.removeClass("bookmarked");
+    } else {
+        child.addClass("bookmarked");
+    }
+}
+
 // click node --> expand/collapse
 $stack.on("click", ".name", function(e) {
     const parent = $(this).parent();
@@ -573,7 +583,7 @@ $stack.on("mouseenter", ".name", function(e) {
     let totalTime = null;
     $(this).parents(".node").each(function(i, element) {
         const parent = $(element);
-        const time = parseInt(parent.children(".name").children(".time").text().replace(/[^0-9]/, ""));
+        const time = parseFloat(parent.attr("data-time"));
 
         if (totalTime == null) {
             totalTime = time;
@@ -584,6 +594,12 @@ $stack.on("mouseenter", ".name", function(e) {
             span.css({
                 top: pos.top + "px"
             });
+
+            const parentName = parent.children(".name");
+            if (parentName.hasClass("bookmarked")) {
+                span.addClass("bookmarked");
+            }
+
             $overlay.append(span);
         }
     });
@@ -644,7 +660,9 @@ $stack.contextmenu(function(e) {
 contextMenu.click(function(e) {
     const target = $(e.target);
     const action = target.attr("data-action");
-    if (action === "expand") {
+    if (action === "bookmark") {
+        toggleBookmark($(contextMenuTarget));
+    } else if (action === "expand") {
         expandEntireTree($(contextMenuTarget));
     } else if (action === "collapse") {
         collapseEntireTree($(contextMenuTarget));
