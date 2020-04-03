@@ -60,8 +60,9 @@ function renderData(data, renderingFunction) {
     // display title
     if (data["metadata"] && data["metadata"]["user"] && data["metadata"]["startTime"] && data["metadata"]["interval"]) {
         const user = data["metadata"]["user"];
+        const name = user["name"];
         const start = new Date(data["metadata"]["startTime"]);
-        const startTime = start.toLocaleTimeString([], {hour12: true, hour: '2-digit', minute: '2-digit'})
+        const startTime = start.toLocaleTimeString([], {hour12: true, hour: '2-digit', minute: '2-digit'}).replace(" ", "");
         const startDate = start.toLocaleDateString();
         const interval = data["metadata"]["interval"] / 1000;
 
@@ -73,15 +74,16 @@ function renderData(data, renderingFunction) {
         let title;
         if (user["type"] === 1) { // player
             const uuid = user["uniqueId"].replace(/\-/g, "");
-            const username = user["name"];
-            title = 'Profile' + comment + ' created by <img src="https://minotar.net/avatar/' + uuid + '/20.png" alt=""> ' + username + ' at ' + startTime + ' on ' + startDate + ', interval=' + interval + 'ms';
+            title = 'Profile' + comment + ' created by <img src="https://minotar.net/avatar/' + uuid + '/20.png" alt=""> ' + name + ' at ' + startTime + ' on ' + startDate + ', interval=' + interval + 'ms';
         } else { // assume console
-            const name = user["name"];
             title = 'Profile' + comment + ' created by <img src="https://minotar.net/avatar/Console/20.png" alt=""> ' + name + ' at ' + startTime + ' on ' + startDate + ', interval=' + interval + 'ms';
         }
 
         $description.html(title);
         $description.show();
+
+        const windowTitle = 'Profile' + comment + ' at ' +  startTime + ' ' + startDate;
+        $("head title").text(windowTitle);
     }
 }
 
