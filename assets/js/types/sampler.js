@@ -65,6 +65,8 @@ function renderData(data, renderingFunction) {
     $sampler.show();
 
     // display title
+    let titleLines = [];
+
     if (data["metadata"] && data["metadata"]["user"] && data["metadata"]["startTime"] && data["metadata"]["interval"]) {
         const user = data["metadata"]["user"];
         const name = user["name"];
@@ -86,7 +88,27 @@ function renderData(data, renderingFunction) {
             title = 'Profile' + comment + ' created by <img src="https://minotar.net/avatar/Console/20.png" alt=""> ' + name + ' at ' + startTime + ' on ' + startDate + ', interval=' + interval + 'ms';
         }
 
-        $description.html(title);
+        titleLines.push(title);
+    }
+
+    if (data["metadata"] && data["metadata"]["platform"]) {
+        const platform = data["metadata"]["platform"];
+        const platformType = Object.keys(PlatformData.Type)[platform.type].toLowerCase();
+        let title = platform.name + ' version "' + platform.version + '" (' + platformType + ')';
+        if (platform["minecraftVersion"]) {
+            title = title + ', Minecraft ' + platform.minecraftVersion;
+        }
+
+        titleLines.push(title);
+    }
+
+    if (titleLines.length > 1) {
+        let inner = "<details><summary>" + titleLines[0] + "</summary>" + titleLines.slice(1).join("<br />") + "</details>";
+
+        $description.html(inner);
+        $description.show();
+    } else if (titleLines.length == 1) {
+        $description.html(titleLines[0]);
         $description.show();
 
         const windowTitle = 'Profile' + comment + ' at ' +  startTime + ' ' + startDate;
@@ -381,7 +403,7 @@ function doYarnRemapping(node, yarnMappings) {
         originalClassName = className;
         className = yarnClassName;
     }
-    if (yarnMethodName && typeof(yarnMethodName) !== "string") {
+    if (yarnMethodName && typeof(yarnMethodName) === "string") {
         originalMethodName = methodName;
         methodName = yarnMethodName;
     }
